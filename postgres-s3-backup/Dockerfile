@@ -7,8 +7,10 @@ ENV SCHEDULE="@daily" \
     NAME_PREFIX='database-archive' \
     AWS_ENDPOINT='s3.amazonaws.com'
 
-RUN apk --no-cache add --virtual build-dependencies tar postgresql ca-certificates && \
-    apk --no-cache add libpq && \
+RUN echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
+    apk update && \
+    apk --no-cache add --virtual build-dependencies tar ca-certificates && \
+    apk --no-cache add libpq postgresql@edge && \
 
     # s3gof3r for S3 uploads
     wget -qO- https://github.com/rlmcpherson/s3gof3r/releases/download/v0.5.0/gof3r_0.5.0_linux_amd64.tar.gz | tar xvz --strip 1 -C /usr/local/bin/ && \
@@ -22,6 +24,7 @@ RUN apk --no-cache add --virtual build-dependencies tar postgresql ca-certificat
     chmod u+x /usr/local/bin/pg_dump* /usr/local/bin/go-cron /usr/local/bin/gof3r && \
 
     # Cleanup
+    apk del postgresql && \
     apk del build-dependencies
 
 COPY backup.sh /app/backup.sh
